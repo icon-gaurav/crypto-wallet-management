@@ -3,6 +3,7 @@ import {Geist, Geist_Mono} from "next/font/google";
 import {ThemeProvider} from "next-themes";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import {Web3Provider} from "@/lib/web3/Web3Provider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -25,7 +26,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
         <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
@@ -35,10 +36,13 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-            <div className="min-w-full min-h-screen flex flex-col items-center justify-between bg-gray-50 text-gray-800">
-                <Navbar/>
-                {children}
-            </div>
+            <Web3Provider>
+                <div
+                    className="min-w-full min-h-screen flex flex-col items-center justify-between bg-gray-50 text-gray-800">
+                    <Navbar/>
+                    {children}
+                </div>
+            </Web3Provider>
         </ThemeProvider>
         </body>
         </html>

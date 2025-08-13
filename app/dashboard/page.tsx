@@ -1,0 +1,87 @@
+"use client";
+
+import {useAccount, useBalance, useConnect, useDisconnect} from 'wagmi';
+
+import { injected } from 'wagmi/connectors'
+
+export default function DashboardPage() {
+    const { address, isConnected } = useAccount();
+    const { connectAsync, connectors } = useConnect();
+    const { data: balance, isLoading } = useBalance({ address });
+    const { disconnect } = useDisconnect();
+
+    async function handleConnect() {
+        try {
+            // Pick the first available connector (usually MetaMask)
+            const connector = connectors[0];
+            if (!connector) throw new Error("No wallet connector found");
+
+            const data = await connectAsync({ connector });
+            console.log("Connected:", data);
+            // await saveWallet(account);
+        } catch (error) {
+            console.error("Connection failed:", error);
+        }
+    }
+
+    if (!isConnected) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen ">
+                <h1 className="text-2xl font-bold mb-4">Wallet Not Connected</h1>
+                <p className="mb-4 text-gray-600">
+                    Please connect your wallet to access the dashboard.
+                </p>
+                <button
+                    onClick={handleConnect}
+                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200"
+                >
+                    Connect Wallet
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold">Dashboard</h1>
+                    <button
+                        onClick={() => disconnect()}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                        Logout
+                    </button>
+                </div>
+
+                {/* Wallet Info */}
+                <div className="mb-6">
+                    <p className="text-gray-600">Wallet Address:</p>
+                    <p className="font-mono text-sm break-all">{address}</p>
+                </div>
+
+                {/* Balance */}
+                <div className="mb-6">
+                    <p className="text-gray-600">Balance:</p>
+                    {isLoading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        <p className="font-semibold">
+                            {balance?.formatted} {balance?.symbol}
+                        </p>
+                    )}
+                </div>
+
+                {/* Actions */}
+                <div>
+                    <button
+                        onClick={() => alert('Send Transaction flow coming soon!')}
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    >
+                        Send Transaction
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
