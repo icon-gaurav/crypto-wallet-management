@@ -1,4 +1,5 @@
 // Navbar component for the application
+
 import React from 'react';
 import Link from 'next/link';
 import {createClient} from '@/lib/supabase/server';
