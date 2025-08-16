@@ -6,12 +6,14 @@ import { injected } from 'wagmi/connectors'
 import {useState} from "react";
 import TransactionList from "@/components/TransactionsList";
 import GetTestEth from "@/components/GetTestEth";
+import {createClient} from "@/lib/supabase/client";
 
 export default function DashboardPage() {
     const { address, isConnected } = useAccount();
     const { connectAsync, connectors } = useConnect();
     const { data: balance, isLoading } = useBalance({ address });
     const { disconnect } = useDisconnect();
+    const supabase = createClient();
 
     const [txs, setTxs] = useState<any[]>([]);
     const [loadingTxs, setLoadingTxs] = useState(false);
@@ -24,9 +26,22 @@ export default function DashboardPage() {
 
             const data = await connectAsync({ connector });
             console.log("Connected:", data);
-            // await saveWallet(account);
+            await saveWallet();
         } catch (error) {
             console.error("Connection failed:", error);
+        }
+    }
+
+    async function saveWallet() {
+        // Placeholder for saving wallet logic
+        console.log("Saving wallet:", address);
+        // save to supabase wallets table
+        try{
+            const { error } = await supabase.from('wallets').upsert([{ address: address }]).select();
+            if (error) throw error;
+            console.log("Wallet saved successfully");
+        } catch (error) {
+            console.error("Error saving wallet:", error);
         }
     }
 
