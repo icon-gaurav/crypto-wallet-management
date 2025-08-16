@@ -1,11 +1,26 @@
 "use client"
 import { useState } from "react"
+import {useAccount, useConnect, useDisconnect} from "wagmi";
 
 export default function WalletConnect({ onAddWallet, onConnectWallet }: {
-    onAddWallet: (address: string) => void,
-    onConnectWallet: () => void
+    onAddWallet: (address: string) => void
 }) {
     const [address, setAddress] = useState("")
+    const { address:connectedAddress, isConnected } = useAccount()
+    const {connectAsync, connectors, } = useConnect();
+    const { disconnect } = useDisconnect();
+    const handleConnect = async () => {
+        try {
+            disconnect(); // Disconnect any existing connection
+            const connector = connectors[0]; // Assuming the first connector is the one we want
+            const data = await connectAsync({ connector });
+            console.log(data?.accounts)
+            onAddWallet(data?.accounts?.[0]);
+        } catch (error) {
+            console.error("Failed to connect wallet:", error);
+            console.log(error)
+        }
+    }
 
     return (
         <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md">
@@ -42,7 +57,7 @@ export default function WalletConnect({ onAddWallet, onConnectWallet }: {
             {/* Option 2: Connect wallet */}
             <div className="text-center">
                 <button
-                    onClick={onConnectWallet}
+                    onClick={handleConnect}
                     className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
                 >
                     Connect Using External Wallet

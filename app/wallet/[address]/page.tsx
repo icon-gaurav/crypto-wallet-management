@@ -40,6 +40,19 @@ export default function WalletDetail() {
             console.log("Saving wallet:", address);
             // save to supabase wallets table
             try {
+                // fetch wallets table and check if address already exists
+                const {data: existingWallets, error: fetchError} = await supabase
+                    .from('wallets')
+                    .select('address')
+                    .eq('address', address as `0x${string}`)
+                    .single();
+                if (fetchError) throw fetchError;
+                // If the address already exists, do not insert again
+                if (existingWallets) {
+                    console.log("Wallet already exists in the database.");
+                    return;
+                }
+                // If the address does not exist, insert it
                 const {error} = await supabase.from('wallets').upsert([{address: address}]).select();
                 if (error) throw error;
                 console.log("Wallet saved successfully");

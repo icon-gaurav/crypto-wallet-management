@@ -8,7 +8,7 @@ import WalletConnect from "@/components/WalletConnect";
 export default function DashboardPage() {
     const [newWalletAddress, setNewWalletAddress] = useState("");
     const {address, isConnected} = useAccount();
-    const {connectAsync, connectors} = useConnect();
+
     const supabase = createClient();
     const [wallets, setWallets] = useState<string[]>([])
     const [loading, setLoading] = useState(true)
@@ -66,24 +66,6 @@ export default function DashboardPage() {
         <div className="min-h-screen p-6 min-w-screen">
             <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
             {/* Add Wallet Section */}
-            <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-4">Add New Wallet</h2>
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        value={newWalletAddress}
-                        onChange={(e) => setNewWalletAddress(e.target.value)}
-                        placeholder="Enter wallet address"
-                        className="px-3 py-2 border rounded-lg w-full"
-                    />
-                    <button
-                        onClick={() => handleAddWallet(newWalletAddress)}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                    >
-                        Add Wallet
-                    </button>
-                </div>
-            </div>
             {loading ? (
                 <p>Loading...</p>
             ) : wallets.length > 0 ? (
@@ -139,11 +121,13 @@ export default function DashboardPage() {
                     </ul>
                 </div>
             ) : (
-                <WalletConnect
-                    onAddWallet={handleAddWallet}
-                    onConnectWallet={handleConnectWallet}
-                />
+                <p className="text-gray-500">No wallets connected yet.</p>
             )}
+
+            {/* Connect Wallet Section */}
+            <WalletConnect
+                onAddWallet={handleAddWallet}
+            />
         </div>
     );
 }
