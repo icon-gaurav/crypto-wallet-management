@@ -1,14 +1,20 @@
 "use client";
-
+import axios from "axios"
 import {useAccount, useBalance, useConnect, useDisconnect} from 'wagmi';
 
 import { injected } from 'wagmi/connectors'
+import {useState} from "react";
+import TransactionList from "@/components/TransactionsList";
+import GetTestEth from "@/components/GetTestEth";
 
 export default function DashboardPage() {
     const { address, isConnected } = useAccount();
     const { connectAsync, connectors } = useConnect();
     const { data: balance, isLoading } = useBalance({ address });
     const { disconnect } = useDisconnect();
+
+    const [txs, setTxs] = useState<any[]>([]);
+    const [loadingTxs, setLoadingTxs] = useState(false);
 
     async function handleConnect() {
         try {
@@ -22,6 +28,23 @@ export default function DashboardPage() {
         } catch (error) {
             console.error("Connection failed:", error);
         }
+    }
+
+    // Fetch transactions from Etherscan
+    async function fetchTransactions() {
+        if (!address) return;
+        setLoadingTxs(true);
+
+        try {
+            const res = await axios.get(
+                `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
+            );
+            setTxs(res.data.result);
+        } catch (err) {
+            console.error("Failed to fetch txs:", err);
+        }
+
+        setLoadingTxs(false);
     }
 
     if (!isConnected) {
@@ -50,7 +73,7 @@ export default function DashboardPage() {
                         onClick={() => disconnect()}
                         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                     >
-                        Logout
+                        Disconnect
                     </button>
                 </div>
 
@@ -82,6 +105,9 @@ export default function DashboardPage() {
                     </button>
                 </div>
             </div>
+            {/* Faucet Section */}
+            <GetTestEth />
+            <TransactionList />
         </div>
     );
 }
