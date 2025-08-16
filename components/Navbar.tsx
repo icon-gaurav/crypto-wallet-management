@@ -19,9 +19,7 @@ export default async function Navbar() {
                         >
                             Dashboard
                         </Link>
-                        <Link
-                            href="/wallets"
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Wallets</Link>
+
                     </>
                 ) : (
                     <>

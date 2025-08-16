@@ -1,43 +1,25 @@
 "use client";
-import axios from "axios"
 import {useAccount, useBalance, useConnect, useDisconnect} from 'wagmi';
-
-import { injected } from 'wagmi/connectors'
-import {useState} from "react";
-import TransactionList from "@/components/TransactionsList";
-import GetTestEth from "@/components/GetTestEth";
+import {useEffect, useState} from "react";
 import {createClient} from "@/lib/supabase/client";
+import {useRouter} from "next/navigation";
+import WalletConnect from "@/components/WalletConnect";
 
 export default function DashboardPage() {
-    const { address, isConnected } = useAccount();
-    const { connectAsync, connectors } = useConnect();
-    const { data: balance, isLoading } = useBalance({ address });
-    const { disconnect } = useDisconnect();
+    const [newWalletAddress, setNewWalletAddress] = useState("");
+    const {address, isConnected} = useAccount();
+    const {connectAsync, connectors} = useConnect();
     const supabase = createClient();
-
-    const [txs, setTxs] = useState<any[]>([]);
-    const [loadingTxs, setLoadingTxs] = useState(false);
-
-    async function handleConnect() {
-        try {
-            // Pick the first available connector (usually MetaMask)
-            const connector = connectors[0];
-            if (!connector) throw new Error("No wallet connector found");
-
-            const data = await connectAsync({ connector });
-            console.log("Connected:", data);
-            await saveWallet();
-        } catch (error) {
-            console.error("Connection failed:", error);
-        }
-    }
+    const [wallets, setWallets] = useState<string[]>([])
+    const [loading, setLoading] = useState(true)
+    const router = useRouter()
 
     async function saveWallet() {
         // Placeholder for saving wallet logic
         console.log("Saving wallet:", address);
         // save to supabase wallets table
-        try{
-            const { error } = await supabase.from('wallets').upsert([{ address: address }]).select();
+        try {
+            const {error} = await supabase.from('wallets').upsert([{address: address}]).select();
             if (error) throw error;
             console.log("Wallet saved successfully");
         } catch (error) {
@@ -45,84 +27,123 @@ export default function DashboardPage() {
         }
     }
 
-    // Fetch transactions from Etherscan
-    async function fetchTransactions() {
-        if (!address) return;
-        setLoadingTxs(true);
 
-        try {
-            const res = await axios.get(
-                `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY}`
-            );
-            setTxs(res.data.result);
-        } catch (err) {
-            console.error("Failed to fetch txs:", err);
+    // 🔹 Save wallet manually
+    const handleAddWallet = async (address: string) => {
+        const {error} = await supabase.from("wallets").insert([{address}])
+        if (!error) {
+            setWallets((prev) => [...prev, address])
         }
-
-        setLoadingTxs(false);
     }
 
-    if (!isConnected) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen ">
-                <h1 className="text-2xl font-bold mb-4">Wallet Not Connected</h1>
-                <p className="mb-4 text-gray-600">
-                    Please connect your wallet to access the dashboard.
-                </p>
-                <button
-                    onClick={handleConnect}
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200"
-                >
-                    Connect Wallet
-                </button>
-            </div>
-        );
+    // 🔹 Connect wallet using MetaMask
+    const handleConnectWallet = async () => {
+        // wagmi connectAsync() logic goes here
+        // For now, we’ll mock it:
+        const mockAddress = "0x1234567890abcdef..."
+        await handleAddWallet(mockAddress)
     }
+
+    // 🔹 Navigate to wallet detail page
+    const goToWallet = (address: string) => {
+        router.push(`/wallet/${address}`)
+    }
+
+    useEffect(() => {
+        const fetchWallets = async () => {
+            setLoading(true)
+            const {data, error} = await supabase.from("wallets").select("id,address,created_at")
+            if (!error && data) {
+                setWallets(data.map((w) => w.address))
+            }
+            setLoading(false)
+        }
+        fetchWallets()
+    }, [])
+
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="min-h-screen p-6 min-w-screen">
+            <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+            {/* Add Wallet Section */}
+            <div className="mb-6">
+                <h2 className="text-lg font-semibold mb-4">Add New Wallet</h2>
+                <div className="flex space-x-2">
+                    <input
+                        type="text"
+                        value={newWalletAddress}
+                        onChange={(e) => setNewWalletAddress(e.target.value)}
+                        placeholder="Enter wallet address"
+                        className="px-3 py-2 border rounded-lg w-full"
+                    />
                     <button
-                        onClick={() => disconnect()}
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                        onClick={() => handleAddWallet(newWalletAddress)}
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                     >
-                        Disconnect
-                    </button>
-                </div>
-
-                {/* Wallet Info */}
-                <div className="mb-6">
-                    <p className="text-gray-600">Wallet Address:</p>
-                    <p className="font-mono text-sm break-all">{address}</p>
-                </div>
-
-                {/* Balance */}
-                <div className="mb-6">
-                    <p className="text-gray-600">Balance:</p>
-                    {isLoading ? (
-                        <p>Loading...</p>
-                    ) : (
-                        <p className="font-semibold">
-                            {balance?.formatted} {balance?.symbol}
-                        </p>
-                    )}
-                </div>
-
-                {/* Actions */}
-                <div>
-                    <button
-                        onClick={() => alert('Send Transaction flow coming soon!')}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    >
-                        Send Transaction
+                        Add Wallet
                     </button>
                 </div>
             </div>
-            {/* Faucet Section */}
-            <GetTestEth />
-            <TransactionList />
+            {loading ? (
+                <p>Loading...</p>
+            ) : wallets.length > 0 ? (
+                <div>
+                    <h2 className="text-lg font-semibold mb-4">Recent Connected Wallets</h2>
+                    <ul className="space-y-2">
+                        {wallets.map((addr) => (
+                            <li
+                                key={addr}
+                                className="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition"
+                            >
+                                {/* Wallet address */}
+                                <span
+                                    onClick={() => goToWallet(addr)}
+                                    className="cursor-pointer text-gray-800 font-mono text-sm truncate"
+                                >
+      {addr}
+    </span>
+
+                                {/* Action buttons */}
+                                <div className="flex space-x-2">
+                                    {/* View History */}
+                                    <button
+                                        onClick={() => goToWallet(addr)}
+                                        className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                                    >
+                                        View History
+                                    </button>
+
+                                    {/* Copy address */}
+                                    <button
+                                        onClick={() => navigator.clipboard.writeText(addr)}
+                                        className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg"
+                                    >
+                                        Copy
+                                    </button>
+
+                                    {/* Remove address */}
+                                    <button
+                                        onClick={async () => {
+                                            const {error} = await supabase.from("wallets").delete().eq("address", addr)
+                                            if (!error) {
+                                                setWallets((prev) => prev.filter((w) => w !== addr))
+                                            }
+                                        }}
+                                        className="px-3 py-1 text-sm bg-red-500 text-white hover:bg-red-600 rounded-lg"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                <WalletConnect
+                    onAddWallet={handleAddWallet}
+                    onConnectWallet={handleConnectWallet}
+                />
+            )}
         </div>
     );
 }
