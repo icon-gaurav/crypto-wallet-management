@@ -2,7 +2,7 @@
 import { useState } from "react"
 import {useAccount, useConnect, useDisconnect} from "wagmi";
 
-export default function WalletConnect({ onAddWallet, onConnectWallet }: {
+export default function WalletConnect({ onAddWallet }: {
     onAddWallet: (address: string) => void
 }) {
     const [address, setAddress] = useState("")
