@@ -6,7 +6,7 @@ import {createClient} from '@/lib/supabase/server';
 
 export default async function Navbar() {
     const supabase = await createClient();
-    const {data: {user}, error} = await supabase.auth.getUser()
+    const {data: {user}} = await supabase.auth.getUser()
     return (
         <nav className="w-full  px-6 py-4 flex justify-between items-center bg-white shadow-md">
             <h1 className="text-2xl font-bold text-indigo-600">Crypto Wallet</h1>

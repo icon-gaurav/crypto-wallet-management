@@ -12,7 +12,7 @@ export default function SendTransaction() {
     const { data, isPending, sendTransaction, error } = useSendTransaction();
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
-            hash:data?.hash,
+            hash:data,
         })
 
     const handleSend = async () => {
@@ -57,7 +57,7 @@ export default function SendTransaction() {
             {isConfirmed && <p>Transaction confirmed.</p>}
             {data && (
                 <p className="text-sm text-green-600">
-                    ✅ Transaction sent!
+                    ✅ Transaction sent! {data}
                     <Link
                         href={`/dashboard`}
                         className="underline"

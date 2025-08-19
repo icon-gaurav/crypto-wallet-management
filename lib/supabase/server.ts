@@ -1,5 +1,7 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {createServerClient} from "@supabase/ssr";
+import {cookies} from "next/headers";
+
 
 /**
  * Especially important if using Fluid compute: Don't put this client in a
@@ -17,9 +19,9 @@ export async function createClient() {
                 getAll() {
                     return cookieStore.getAll();
                 },
-                setAll(cookiesToSet) {
+                setAll(cookiesToSet: any[]) {
                     try {
-                        cookiesToSet.forEach(({ name, value, options }:any) =>
+                        cookiesToSet.forEach(({name, value, options}: any) =>
                             cookieStore.set(name, value, options),
                         );
                     } catch {
