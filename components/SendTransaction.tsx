@@ -6,7 +6,7 @@ import { parseEther } from "viem";
 import Link from "next/link";
 
 export default function SendTransaction() {
-    const [to, setTo] = useState("");
+    const [to, setTo] = useState<`0x${string}` | "">("")
     const [amount, setAmount] = useState("");
 
     const { data, isPending, sendTransaction, error } = useSendTransaction();
@@ -18,7 +18,7 @@ export default function SendTransaction() {
     const handleSend = async () => {
         try {
             await sendTransaction({
-                to,
+                to:to as `0x${string}`,
                 value: parseEther(amount), // convert ETH string to wei
             });
         } catch (err) {
@@ -32,9 +32,9 @@ export default function SendTransaction() {
 
             <input
                 type="text"
-                placeholder="Recipient address"
+                placeholder="Recipient address (0x...)"
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
+                onChange={(e) => setTo(e.target.value as `0x${string}` | "")}
                 className="w-full p-2 border rounded"
             />
 
