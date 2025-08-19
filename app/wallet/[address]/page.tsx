@@ -3,7 +3,6 @@ import {useEffect, useState} from "react"
 import {useParams} from "next/navigation"
 import {useBalance} from "wagmi";
 import Link from "next/link";
-import {createClient} from "@/lib/supabase/client";
 
 interface Transaction {
     hash: string
@@ -17,7 +16,6 @@ export default function WalletDetail() {
     const {address} = useParams()
     const [txs, setTxs] = useState<Transaction[]>([])
     const [loading, setLoading] = useState(true)
-    const supabase = createClient();
     const {data, isError, isLoading} = useBalance({
         address: address as `0x${string}`,
     });
@@ -35,35 +33,9 @@ export default function WalletDetail() {
             }
             setLoading(false)
         }
-        async function saveWallet() {
-            // Placeholder for saving wallet logic
-            console.log("Saving wallet:", address);
-            // save to supabase wallets table
-            try {
-                // fetch wallets table and check if address already exists
-                const {data: existingWallets, error: fetchError} = await supabase
-                    .from('wallets')
-                    .select('address')
-                    .eq('address', address as `0x${string}`)
-                    .single();
-                if (fetchError) throw fetchError;
-                // If the address already exists, do not insert again
-                if (existingWallets) {
-                    console.log("Wallet already exists in the database.");
-                    return;
-                }
-                // If the address does not exist, insert it
-                const {error} = await supabase.from('wallets').upsert([{address: address}]).select();
-                if (error) throw error;
-                console.log("Wallet saved successfully");
-            } catch (error) {
-                console.error("Error saving wallet:", error);
-            }
-        }
 
         if (address) {
             fetchTxs()
-            saveWallet()
         }
     }, [address])
 
@@ -106,6 +78,8 @@ export default function WalletDetail() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                            <th className={"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"}>Time</th>
+                            <th className={"px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"}>Hash</th>
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -122,12 +96,22 @@ export default function WalletDetail() {
                                     </Link>
                                 </td>
                                 <td className="px-6 py-4 text-sm">
-                                    <Link href={`/wallet/${tx.from}`}
+                                    <Link href={`/wallet/${tx.to}`}
                                           className="text-blue-500 hover:underline">
                                         {tx.to}
 
                                     </Link></td>
                                 <td className="px-6 py-4 text-sm">{tx.value} Wei</td>
+                                <td className="px-6 py-4 text-sm">
+                                    {new Date(parseInt(tx.timeStamp) * 1000).toLocaleString()}
+                                </td>
+                                <td className="px-6 py-4 text-sm">
+                                    <Link href={`https://sepolia.etherscan.io/tx/${tx.hash}`}
+                                          target="_blank"
+                                          className="text-blue-500 hover:underline">
+                                        {tx.hash.slice(0, 10)}...
+                                    </Link>
+                                </td>
                             </tr>
                         ))}
                         </tbody>

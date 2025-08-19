@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { parseEther } from "viem";
+import Link from "next/link";
 
 export default function SendTransaction() {
     const [to, setTo] = useState("");
@@ -56,14 +57,13 @@ export default function SendTransaction() {
             {isConfirmed && <p>Transaction confirmed.</p>}
             {data && (
                 <p className="text-sm text-green-600">
-                    ✅ Transaction sent! Tx hash:{" "}
-                    <a
-                        href={`https://sepolia.etherscan.io/tx/${data.hash}`}
-                        target="_blank"
+                    ✅ Transaction sent!
+                    <Link
+                        href={`/dashboard`}
                         className="underline"
                     >
-                        {data?.hash?.slice(0, 10)}...
-                    </a>
+                        Click here to view history
+                    </Link>
                 </p>
             )}
             {error && (
