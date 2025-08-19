@@ -74,6 +74,13 @@ export default function WalletDetail() {
             {/* Wallet address */}
             <p className="text-gray-700">Address: {address}</p>
 
+            {/* Send Transaction button */}
+            <div className="mt-4">
+                <Link href={`/send/`} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Send Transaction
+                </Link>
+            </div>
+
             {/* Balance section */}
             <div className="mt-4 p-4  rounded-lg bg-gray-50 shadow">
                 {isLoading && <p>Fetching balance...</p>}
@@ -105,7 +112,7 @@ export default function WalletDetail() {
                         {txs.map((tx) => (
                             <tr key={tx.hash}>
                                 <td className="px-6 py-4 text-sm text-green-600 truncate">
-                                    {tx.from.toLowerCase() === address ? "Sent" : "Received"}
+                                    {tx?.from?.toLowerCase() == address?.toString()?.toLowerCase() ? "Sent" : "Received"}
                                 </td>
                                 <td className="px-6 py-4 text-sm">
                                     <Link href={`/wallet/${tx.from}`}
