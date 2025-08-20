@@ -1,17 +1,18 @@
+"use client";
 // Navbar component for the application
 
 import React from 'react';
 import Link from 'next/link';
-import {createClient} from '@/lib/supabase/server';
+import {useAccount, useDisconnect} from "wagmi";
 
-export default async function Navbar() {
-    const supabase = await createClient();
-    const {data: {user}} = await supabase.auth.getUser()
+export default function Navbar() {
+    const {isConnected} = useAccount()
+    const {disconnect} = useDisconnect()
     return (
         <nav className="w-full  px-6 py-4 flex justify-between items-center bg-white shadow-md">
             <h1 className="text-2xl font-bold text-indigo-600">Crypto Wallet</h1>
             <div className="flex space-x-4">
-                {user ? (
+                {isConnected ? (
                     <>
                         <Link
                             href="/dashboard"
@@ -19,8 +20,11 @@ export default async function Navbar() {
                         >
                             Dashboard
                         </Link>
-                        <button>
-                            Logout
+                        <button className={"px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"}
+                                onClick={() => {
+                                    disconnect()
+                                }}>
+                            Disconnect
                         </button>
 
 
@@ -28,17 +32,12 @@ export default async function Navbar() {
                 ) : (
                     <>
                         <Link
-                            href="/signin"
+                            href="/"
                             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
                         >
-                            Sign In
+                            Connect Wallet
                         </Link>
-                        <Link
-                            href="/signup"
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-                        >
-                            Sign Up
-                        </Link>
+
                     </>
                 )}
             </div>

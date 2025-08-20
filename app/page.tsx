@@ -1,13 +1,13 @@
-
-import Link from "next/link";
-import {createClient} from "@/lib/supabase/server";
+"use client"
 import {redirect, RedirectType} from "next/navigation";
+import WalletConnect from "@/components/WalletConnect";
+import {useAccount} from "wagmi";
 
 
-export default async function Home() {
-    const supabase = await createClient();
-    const {data:{user}, error} = await supabase.auth.getUser()
-    if(user){
+export default function Home() {
+    const { isConnected } = useAccount()
+
+    if(isConnected){
         // Redirect to dashboard if user is already logged in
         redirect('/dashboard', RedirectType.push)
     }
@@ -16,7 +16,7 @@ export default async function Home() {
         <div className="min-h-screen flex flex-col items-center justify-center">
 
 
-            {!user && (
+            {!isConnected && (
                 <header className="mt-16 text-center max-w-2xl">
                     <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
                         Manage Your Crypto with Ease 🚀
@@ -26,12 +26,7 @@ export default async function Home() {
                         your transaction history — all in one secure and easy-to-use app.
                     </p>
                     <div className="mt-6">
-                        <Link
-                            href="/signup"
-                            className="px-6 py-3 bg-indigo-600 text-white text-lg rounded-md hover:bg-indigo-700 transition"
-                        >
-                            Get Started
-                        </Link>
+                       <WalletConnect onAddWallet={()=> redirect('/dashboard')}/>
                     </div>
                 </header>
             )}

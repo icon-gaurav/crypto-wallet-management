@@ -1,133 +1,124 @@
 "use client";
-import {useAccount, useBalance, useConnect, useDisconnect} from 'wagmi';
-import {useEffect, useState} from "react";
-import {createClient} from "@/lib/supabase/client";
-import {useRouter} from "next/navigation";
-import WalletConnect from "@/components/WalletConnect";
+
+import {useAccount, useBalance} from "wagmi";
+import {useState} from "react";
+import {Copy, Send, Wallet, ExternalLink, X} from "lucide-react";
+import {redirect} from "next/navigation";
 
 export default function DashboardPage() {
-    const [newWalletAddress, setNewWalletAddress] = useState("");
     const {address, isConnected} = useAccount();
+    const {data: balance} = useBalance({address});
 
-    const supabase = createClient();
-    const [wallets, setWallets] = useState<string[]>([])
-    const [loading, setLoading] = useState(true)
-    const router = useRouter()
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    async function saveWallet() {
-        // Placeholder for saving wallet logic
-        console.log("Saving wallet:", address);
-        // save to supabase wallets table
-        try {
-            const {error} = await supabase.from('wallets').upsert([{address: address}]).select();
-            if (error) throw error;
-            console.log("Wallet saved successfully");
-        } catch (error) {
-            console.error("Error saving wallet:", error);
+    const handleCopy = () => {
+        if (address) {
+            navigator.clipboard.writeText(address);
+            alert("Wallet address copied!");
         }
+    };
+
+    if (!isConnected) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="p-6 border rounded-lg shadow-md text-center">
+                    <p className="text-lg font-semibold">No wallet connected</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Please connect your wallet to view your dashboard.
+                    </p>
+                </div>
+            </div>
+        );
     }
-
-
-    // 🔹 Save wallet manually
-    const handleAddWallet = async (address: string) => {
-        const {error} = await supabase.from("wallets").insert([{address}])
-        if (!error) {
-            setWallets((prev) => [...prev, address])
-        }
-    }
-
-    // 🔹 Connect wallet using MetaMask
-    const handleConnectWallet = async () => {
-        // wagmi connectAsync() logic goes here
-        // For now, we’ll mock it:
-        const mockAddress = "0x1234567890abcdef..."
-        await handleAddWallet(mockAddress)
-    }
-
-    // 🔹 Navigate to wallet detail page
-    const goToWallet = (address: string) => {
-        router.push(`/wallet/${address}`)
-    }
-
-    useEffect(() => {
-        const fetchWallets = async () => {
-            setLoading(true)
-            const {data, error} = await supabase.from("wallets").select("id,address,created_at")
-            if (!error && data) {
-                setWallets(data.map((w) => w.address))
-            }
-            setLoading(false)
-        }
-        fetchWallets()
-    }, [])
-
 
     return (
-        <div className="min-h-screen p-6 min-w-screen">
-            <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-            {/* Add Wallet Section */}
-            {loading ? (
-                <p>Loading...</p>
-            ) : wallets.length > 0 ? (
-                <div>
-                    <h2 className="text-lg font-semibold mb-4">Recent Connected Wallets</h2>
-                    <ul className="space-y-2">
-                        {wallets.map((addr) => (
-                            <li
-                                key={addr}
-                                className="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition"
-                            >
-                                {/* Wallet address */}
-                                <span
-                                    onClick={() => goToWallet(addr)}
-                                    className="cursor-pointer text-gray-800 font-mono text-sm truncate"
-                                >
-      {addr}
-    </span>
+        <div className="p-8 space-y-8">
+            <h1 className="text-3xl font-bold">Dashboard</h1>
 
-                                {/* Action buttons */}
-                                <div className="flex space-x-2">
-                                    {/* View History */}
-                                    <button
-                                        onClick={() => goToWallet(addr)}
-                                        className="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                                    >
-                                        View History
-                                    </button>
-
-                                    {/* Copy address */}
-                                    <button
-                                        onClick={() => navigator.clipboard.writeText(addr)}
-                                        className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg"
-                                    >
-                                        Copy
-                                    </button>
-
-                                    {/* Remove address */}
-                                    <button
-                                        onClick={async () => {
-                                            const {error} = await supabase.from("wallets").delete().eq("address", addr)
-                                            if (!error) {
-                                                setWallets((prev) => prev.filter((w) => w !== addr))
-                                            }
-                                        }}
-                                        className="px-3 py-1 text-sm bg-red-500 text-white hover:bg-red-600 rounded-lg"
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+            {/* Wallet Info */}
+            <div className="border rounded-lg shadow-md p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Wallet className="w-10 h-10 text-blue-600"/>
+                    <div>
+                        <p className="text-sm text-gray-500">Connected Wallet</p>
+                        <p className="font-semibold">{address}</p>
+                    </div>
                 </div>
-            ) : (
-                <p className="text-gray-500">No wallets connected yet.</p>
-            )}
+                <button
+                    onClick={handleCopy}
+                    className="p-2 border rounded-lg hover:bg-gray-100"
+                >
+                    <Copy className="w-4 h-4"/>
+                </button>
+            </div>
 
-            {/* Connect Wallet Section */}
-            <WalletConnect
-                onAddWallet={handleAddWallet}
-            />
+            {/* Balance Info */}
+            <div className="border rounded-lg shadow-md p-6">
+                <p className="text-sm text-gray-500">Total Balance</p>
+                <p className="text-2xl font-bold mt-2">
+                    {balance ? `${balance.formatted} ${balance.symbol}` : "Loading..."}
+                </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-4 sm:flex-row">
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                    <Send className="w-4 h-4"/> Send Money
+                </button>
+
+                <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onClick={() => redirect('/transactions')}>
+                    <ExternalLink className="w-4 h-4"/> View All Transactions
+                </button>
+
+                <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onClick={() => redirect('/transactions')}>
+                    <ExternalLink className="w-4 h-4"/> Check Txn Status
+                </button>
+            </div>
+
+            {/* Send Money Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/40">
+                    <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+                        <button
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100"
+                        >
+                            <X className="w-5 h-5"/>
+                        </button>
+                        <h2 className="text-xl font-semibold mb-4">Send Money</h2>
+                        <form className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium">Recipient</label>
+                                <input
+                                    type="text"
+                                    placeholder="0x..."
+                                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium">Amount (ETH)</label>
+                                <input
+                                    type="number"
+                                    step="0.0001"
+                                    placeholder="0.1"
+                                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700"
+                            >
+                                Send
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
