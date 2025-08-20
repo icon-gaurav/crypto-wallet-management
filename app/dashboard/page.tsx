@@ -4,6 +4,7 @@ import {useAccount, useBalance} from "wagmi";
 import {useState} from "react";
 import {Copy, Send, Wallet, ExternalLink, X} from "lucide-react";
 import {redirect} from "next/navigation";
+import SendTransaction from "@/components/SendTransaction";
 
 export default function DashboardPage() {
     const {address, isConnected} = useAccount();
@@ -90,32 +91,8 @@ export default function DashboardPage() {
                         >
                             <X className="w-5 h-5"/>
                         </button>
-                        <h2 className="text-xl font-semibold mb-4">Send Money</h2>
-                        <form className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium">Recipient</label>
-                                <input
-                                    type="text"
-                                    placeholder="0x..."
-                                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium">Amount (ETH)</label>
-                                <input
-                                    type="number"
-                                    step="0.0001"
-                                    placeholder="0.1"
-                                    className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700"
-                            >
-                                Send
-                            </button>
-                        </form>
+                        {/*<h2 className="text-xl font-semibold mb-4">Send Money</h2>*/}
+                        <SendTransaction/>
                     </div>
                 </div>
             )}

@@ -6,19 +6,19 @@ import { parseEther } from "viem";
 import Link from "next/link";
 
 export default function SendTransaction() {
-    const [to, setTo] = useState<`0x${string}` | "">("")
+    const [to, setTo] = useState<`0x${string}` | "">("");
     const [amount, setAmount] = useState("");
 
-    const { data, isPending, sendTransaction, error } = useSendTransaction();
+    const { data: txHash, isPending, sendTransaction, error } = useSendTransaction();
     const { isLoading: isConfirming, isSuccess: isConfirmed } =
         useWaitForTransactionReceipt({
-            hash:data,
-        })
+            hash: txHash, // hash of transaction
+        });
 
     const handleSend = async () => {
         try {
             await sendTransaction({
-                to:to as `0x${string}`,
+                to: to as `0x${string}`,
                 value: parseEther(amount), // convert ETH string to wei
             });
         } catch (err) {
@@ -27,7 +27,7 @@ export default function SendTransaction() {
     };
 
     return (
-        <div className="p-4 border rounded-lg shadow-md max-w-md mx-auto space-y-4">
+        <div className="p-4 max-w-md mx-auto space-y-4 rounded">
             <h2 className="text-lg font-semibold">Send ETH</h2>
 
             <input
@@ -53,19 +53,39 @@ export default function SendTransaction() {
             >
                 {isPending ? "Sending..." : "Send"}
             </button>
-            {isConfirming && <p>Waiting for confirmation...</p>}
-            {isConfirmed && <p>Transaction confirmed.</p>}
-            {data && (
-                <p className="text-sm text-green-600">
-                    ✅ Transaction sent! {data}
-                    <Link
-                        href={`/dashboard`}
-                        className="underline"
-                    >
-                        Click here to view history
-                    </Link>
+
+            {/* Transaction States */}
+            {isPending && <p className="text-yellow-600">⏳ Transaction is being sent...</p>}
+            {isConfirming && <p className="text-blue-600">⏳ Waiting for confirmation...</p>}
+            {isConfirmed && (
+                <p className="text-green-600">
+                    ✅ Transaction confirmed!
                 </p>
             )}
+
+            {/* Transaction Details */}
+            {txHash && (
+                <div className="mt-2 space-y-2">
+                    <p className="text-sm break-all">
+                        🔗 Tx Hash: {txHash}
+                    </p>
+                    <Link
+                        href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                        target="_blank"
+                        className="underline text-blue-600"
+                    >
+                        View on Etherscan
+                    </Link>
+                    <br />
+                    <Link
+                        href={`/dashboard`}
+                        className="underline text-purple-600"
+                    >
+                        Go to Dashboard
+                    </Link>
+                </div>
+            )}
+
             {error && (
                 <p className="text-sm text-red-600">
                     ❌ Error: {error.message}
