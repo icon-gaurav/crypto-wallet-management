@@ -38,7 +38,7 @@ export default function RootLayout({
         >
             <Web3Provider>
                 <div
-                    className="min-w-screen min-h-screen flex flex-col items-center  bg-gray-50 text-gray-800">
+                    className="w-full min-h-screen flex flex-col items-center  bg-gray-50 text-gray-800 pt-16">
                     <Navbar/>
                     {children}
                 </div>

@@ -9,7 +9,7 @@ export default function Navbar() {
     const {isConnected} = useAccount()
     const {disconnect} = useDisconnect()
     return (
-        <nav className="w-full  px-6 py-4 flex justify-between items-center bg-white shadow-md">
+        <nav className="w-full  px-6 py-4 flex justify-between items-center bg-white shadow-md fixed top-0 z-50">
             <h1 className="text-2xl font-bold text-indigo-600">Crypto Wallet</h1>
             <div className="flex space-x-4">
                 {isConnected ? (
