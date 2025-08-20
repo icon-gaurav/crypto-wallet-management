@@ -19,6 +19,10 @@ export default async function Navbar() {
                         >
                             Dashboard
                         </Link>
+                        <button>
+                            Logout
+                        </button>
+
 
                     </>
                 ) : (
