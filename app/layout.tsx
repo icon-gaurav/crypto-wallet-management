@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Crypto Management Wallet",
+    title: "Crypto Wallet",
     description: "Check Balance & transaction of your crypto wallets",
 };
 
