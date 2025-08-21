@@ -37,21 +37,22 @@ export default function DashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
 
             {/* Wallet Info */}
-            <div className="border rounded-lg shadow-md p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+            <div className="border rounded-lg shadow-md p-4 sm:p-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4 w-full">
                     <Wallet className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600"/>
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm text-gray-500">Connected Wallet</p>
-                        <p className="font-semibold text-sm sm:text-base">{address}</p>
+                        <p className="font-semibold text-sm sm:text-base break-all ">{address}</p>
                     </div>
                 </div>
                 <button
                     onClick={handleCopy}
-                    className="p-2 border rounded-lg hover:bg-gray-100"
+                    className="p-2 border rounded-lg hover:bg-gray-100 flex-shrink-0"
                 >
                     <Copy className="w-4 h-4"/>
                 </button>
             </div>
+
 
             {/* Balance Info */}
             <div className="border rounded-lg shadow-md p-4 sm:p-6">
@@ -70,13 +71,15 @@ export default function DashboardPage() {
                     <Send className="w-4 h-4"/> Send Money
                 </button>
 
-                <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100 w-full sm:w-auto"
-                        onClick={() => redirect('/transactions')}>
+                <button
+                    className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100 w-full sm:w-auto"
+                    onClick={() => redirect('/transactions')}>
                     <ExternalLink className="w-4 h-4"/> View All Transactions
                 </button>
 
-                <button className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100 w-full sm:w-auto"
-                        onClick={() => redirect('/transactions')}>
+                <button
+                    className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100 w-full sm:w-auto"
+                    onClick={() => redirect('/transactions')}>
                     <ExternalLink className="w-4 h-4"/> Check Txn Status
                 </button>
             </div>
